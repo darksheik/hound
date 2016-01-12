@@ -19,7 +19,7 @@ defmodule Hound.Session do
 
   @doc "Creates a session associated with the current pid"
   @spec create_session(String.t, Map.m) :: String.t
-  def create_session(browser_name, additional_capabilities) do
+  def create_session(browser_name, additional_capabilities, custom_selenium_host \\ nil) do
     base_capabilities = %{
       javascriptEnabled: false,
       version: "",
@@ -36,7 +36,7 @@ defmodule Hound.Session do
     }
 
     # No retries for this request
-    make_req(:post, "session", params)
+    make_req(:post, "session", params, %{custom_selenium_host: custom_selenium_host})
   end
 
 
@@ -48,9 +48,9 @@ defmodule Hound.Session do
 
 
   @doc "Destroy a session"
-  @spec destroy_session(String.t) :: :ok
-  def destroy_session(session_id) do
-    make_req(:delete, "session/#{session_id}")
+  @spec destroy_session(String.t, String.t) :: :ok
+  def destroy_session(session_id, custom_selenium_host) do
+    make_req(:delete, "session/#{session_id}", %{}, %{custom_selenium_host: custom_selenium_host})
   end
 
 

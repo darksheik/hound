@@ -26,7 +26,7 @@ defmodule Hound.RequestUtils do
 
 
   defp send_req(type, path, params, options) do
-    url = get_url(path)
+    url = get_url(path, options)
 
     if params != %{} && type == :post do
       headers = [{"Content-Type", "text/json"}]
@@ -84,8 +84,16 @@ defmodule Hound.RequestUtils do
   end
 
 
-  defp get_url(path) do
+  defp get_url(path, options) do
     {:ok, driver_info} = Hound.driver_info
+
+    if options[:custom_selenium_host] do
+      driver_info = Map.put(driver_info, :host, options[:custom_selenium_host])
+    else
+      if (csh = Hound.SessionServer.custom_selenium_host(self)) do
+        driver_info = Map.put(driver_info, :host, csh)
+      end
+    end
 
     host = driver_info[:host]
     port = driver_info[:port]
@@ -93,5 +101,4 @@ defmodule Hound.RequestUtils do
 
     "#{host}:#{port}/#{path_prefix}#{path}"
   end
-
 end
