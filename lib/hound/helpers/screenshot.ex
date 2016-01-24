@@ -36,4 +36,18 @@ defmodule Hound.Helpers.Screenshot do
     path
   end
 
+  def take_screenshot_for_session_and_host(session_id, host, path \\ nil) do
+    base64_png_data = make_req(:get, "session/#{session_id}/screenshot", %{}, %{custom_selenium_host: host})
+
+    binary_image_data = :base64.decode(base64_png_data)
+    {hour, minutes, seconds} = :erlang.time()
+    {year, month, day} = :erlang.date()
+
+    if !path do
+      cwd = File.cwd!()
+      path = "#{cwd}/screenshot-#{year}-#{month}-#{day}-#{hour}-#{minutes}-#{seconds}.png"
+    end
+    :ok = File.write path, binary_image_data
+    path
+  end
 end
