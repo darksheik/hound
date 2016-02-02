@@ -35,7 +35,7 @@ defmodule Hound.ConnectionServer do
       :port => options[:app_port] || Application.get_env(:hound, :app_port, 4001)
     }
 
-    state = %{sessions: [], driver_info: driver_info, configs: configs}
+    state = %{sessions: %{}, driver_info: driver_info, configs: configs}
     :gen_server.start_link({:local, __MODULE__}, __MODULE__, state, [])
   end
 
@@ -44,6 +44,25 @@ defmodule Hound.ConnectionServer do
     {:ok, state}
   end
 
+
+  def handle_call({:add_session, pid, session, value}, _from, state) do
+    session_info = state[:sessions]
+       |> Map.put(session, value)
+
+    new_sessions = Map.merge(state[:sessions], session_info)
+    new_state = Map.merge(state, %{sessions: new_sessions})
+
+    {:reply, new_state[session_info], new_state}
+  end
+
+  def handle_call({:delete_session, pid, session}, _from, state) do
+    session_info = state[:sessions]
+       |> Map.delete(session)
+
+    new_state = Map.put(state, :sessions, session_info)
+
+    {:reply, new_state[session_info], new_state}
+  end
 
   def handle_call(state_key, _from, state) do
     {:reply, state[state_key], state}
