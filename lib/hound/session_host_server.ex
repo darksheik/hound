@@ -4,10 +4,8 @@ defmodule Hound.SessionHostServer do
   use GenServer
 
   def start_link(host) do
-    IO.puts "SessionHostServer start_link *********"
-    IO.puts host
     state = HashDict.new
-    :gen_server.start_link({:local, String.to_atom(host)}, __MODULE__, state, name: String.to_atom(host))
+    :gen_server.start_link({:local, host}, __MODULE__, state, name: host)
   end
 
 
@@ -16,10 +14,10 @@ defmodule Hound.SessionHostServer do
   end
 
 
-  def handle_call({:find_or_create_session, pid, additional_capabilities, custom_selenium_host}, _from, state) do
+  def handle_call({:find_or_create_session, pid, gen_server_pid, additional_capabilities, custom_selenium_host}, _from, state) do
     {:ok, driver_info} = Hound.driver_info
 
-    case state[pid][:current] do
+    case state[gen_server_pid][:current] do
       nil ->
         {:ok, session_id} = Hound.Session.create_session(driver_info[:browser], additional_capabilities, custom_selenium_host)
 
@@ -31,7 +29,7 @@ defmodule Hound.SessionHostServer do
           |> HashDict.put(:all_sessions, all_sessions)
           |> HashDict.put(:custom_selenium_host, custom_selenium_host)
 
-        :gen_server.call Hound.ConnectionServer, {:add_session, self, session_id, String.to_atom(custom_selenium_host)}
+        :gen_server.call Hound.ConnectionServer, {:add_session, self, pid, String.to_atom(custom_selenium_host)}
 
         state_upgrade = HashDict.new |> HashDict.put(pid, session_info)
         new_state = HashDict.merge(state, state_upgrade)
@@ -42,7 +40,7 @@ defmodule Hound.SessionHostServer do
   end
 
 
-  def handle_call({:current_session, pid}, _from, state) do
+  def handle_call({:current_session, pid, gen_server_pid}, _from, state) do
     if HashDict.has_key?(state, pid) do
       {:reply, state[pid][:current], state}
     else
@@ -50,7 +48,7 @@ defmodule Hound.SessionHostServer do
     end
   end
 
-  def handle_call({:custom_selenium_host, pid}, _from, state) do
+  def handle_call({:custom_selenium_host, pid, gen_server_pid}, _from, state) do
     if HashDict.has_key?(state, pid) do
       {:reply, state[pid][:custom_selenium_host], state}
     else
@@ -58,7 +56,7 @@ defmodule Hound.SessionHostServer do
     end
   end
 
-  def handle_call({:change_session, pid, session_name, additional_capabilities, custom_selenium_host}, _from, state) do
+  def handle_call({:change_session, pid, gen_server_pid, session_name, additional_capabilities, custom_selenium_host}, _from, state) do
     {:ok, driver_info} = Hound.driver_info
 
     pid_info = state[pid]
@@ -83,7 +81,7 @@ defmodule Hound.SessionHostServer do
   end
 
 
-  def handle_call({:all_sessions, pid}, _from, state) do
+  def handle_call({:all_sessions, pid, gen_server_pid}, _from, state) do
     if HashDict.has_key?(state, pid) do
       {:reply, state[pid][:all_sessions], state}
     else
@@ -92,7 +90,7 @@ defmodule Hound.SessionHostServer do
   end
 
 
-  def handle_call({:destroy_sessions, pid}, _from, state) do
+  def handle_call({:destroy_sessions, pid, gen_server_pid}, _from, state) do
     if HashDict.has_key?(state, pid) do
       sessions = state[pid][:all_sessions]
       Enum.each sessions, fn({_session_name, session_id})->
@@ -102,35 +100,4 @@ defmodule Hound.SessionHostServer do
     end
     {:reply, :ok, state}
   end
-
-
-  def session_for_pid(pid, additional_capabilities, custom_selenium_host) do
-    :gen_server.call __MODULE__, {:find_or_create_session, pid, additional_capabilities, custom_selenium_host}, 60000
-  end
-
-
-  def current_session_id(pid) do
-    :gen_server.call __MODULE__, {:current_session, pid}, 30000
-  end
-
-  def custom_selenium_host(pid) do
-    :gen_server.call __MODULE__, {:custom_selenium_host, pid}, 30000
-  end
-
-
-  def change_current_session_for_pid(pid, session_name, additional_capabilities, custom_selenium_host) do
-    :gen_server.call __MODULE__, {:change_session, pid, session_name, additional_capabilities, custom_selenium_host}, 30000
-  end
-
-
-  def all_sessions_for_pid(pid) do
-    :gen_server.call __MODULE__, {:all_sessions, pid}, 30000
-  end
-
-
-  def destroy_sessions_for_pid(pid) do
-    :gen_server.call __MODULE__, {:destroy_sessions, pid}, 30000
-  end
-
 end
-
