@@ -95,6 +95,7 @@ defmodule Hound.SessionHostServer do
       sessions = state[pid][:all_sessions]
       Enum.each sessions, fn({_session_name, session_id})->
         Hound.Session.destroy_session(session_id, state[pid][:custom_selenium_host])
+        :gen_server.call Hound.ConnectionServer, {:delete_session, self, pid}
       end
       state = HashDict.delete(state, pid)
     end

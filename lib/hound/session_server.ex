@@ -6,7 +6,6 @@ defmodule Hound.SessionServer do
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: @name)
-    #:gen_server.start_link({:local, __MODULE__}, __MODULE__, state, [])
   end
 
 
