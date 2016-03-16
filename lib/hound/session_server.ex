@@ -51,7 +51,7 @@ defmodule Hound.SessionServer do
     name = String.to_atom(inspect pid)
     gen_server_pid = get_gen_server_pid(name)
     :gen_server.call name, {:destroy_sessions, pid, gen_server_pid}, 30000
-    :gen_server.stop name
+    Supervisor.terminate_child(@name, gen_server_pid)
   end
 
   def get_gen_server_pid(name) do

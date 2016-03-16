@@ -75,8 +75,6 @@ defmodule Hound.SessionHostServer do
     end
 
     new_state = HashDict.put(state, pid, pid_info_update)
-    IO.puts "NEW STATE ***************"
-    IO.inspect new_state
     {:reply, session_id, new_state}
   end
 
