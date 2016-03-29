@@ -42,20 +42,25 @@ defmodule Hound.RequestUtils do
 
     case type do
       :get ->
-        {:ok, resp} = HTTPoison.get(url, headers, @http_options)
+        {status, resp} = HTTPoison.get(url, headers, @http_options)
       :post ->
-        {:ok, resp} = HTTPoison.post(url, body, headers, @http_options)
+        {status, resp} = HTTPoison.post(url, body, headers, @http_options)
       :delete ->
-        {:ok, resp} = HTTPoison.delete(url, headers, @http_options)
+        {status, resp} = HTTPoison.delete(url, headers, @http_options)
     end
 
-    case response_parser.parse(path, resp.status_code, resp.body) do
-      :error ->
-        raise """
-        Webdriver call status code #{resp.status_code} for #{type} request #{url}.
-        Check if webdriver server is running. Make sure it supports the feature being requested.
-        """
-      response -> response
+    case resp do
+      %HTTPoison.Error{id: nil, reason: :timeout} ->
+        {:error, :timeout}
+      _ ->
+      case response_parser.parse(path, resp.status_code, resp.body) do
+        :error ->
+          raise """
+          Webdriver call status code #{resp.status_code} for #{type} request #{url}.
+          Check if webdriver server is running. Make sure it supports the feature being requested.
+          """
+        response -> response
+      end
     end
   end
 
