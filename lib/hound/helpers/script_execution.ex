@@ -23,6 +23,13 @@ defmodule Hound.Helpers.ScriptExecution do
     )
   end
 
+  def execute_phantom_script(script_function, function_args \\ []) do
+    session_id = Hound.current_session_id
+    make_req(:post,
+      "/session/#{session_id}/phantom/execute",
+      %{script: script_function, args: function_args}
+    )
+  end
 
   @doc """
   Execute javascript asynchoronously.
