@@ -39,6 +39,12 @@ defmodule Hound.Helpers.Window do
     make_req(:post, "session/#{session_id}/window/#{window_handle}/maximize")
   end
 
+  @doc "Focus the window"
+  @spec focus_window(String.t) :: nil
+  def focus_window(window_handle) do
+    session_id = Hound.current_session_id
+    make_req(:post, "session/#{session_id}/window", %{handle: window_handle, name: window_handle})
+  end
 
   @doc "Focus frame"
   @spec focus_frame(any) :: :ok
