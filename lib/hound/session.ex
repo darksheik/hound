@@ -19,14 +19,14 @@ defmodule Hound.Session do
 
   @doc "Creates a session associated with the current pid"
   @spec create_session(String.t, Map.m) :: String.t
-  def create_session(browser_name, additional_capabilities, custom_selenium_host \\ nil) do
+  def create_session(additional_capabilities, options) do
     base_capabilities = %{
       javascriptEnabled: false,
       version: "",
       rotatable: false,
       takesScreenshot: true,
       cssSelectorsEnabled: true,
-      browserName: browser_name,
+      browserName: options[:driver_info][:browser],
       nativeEvents: false,
       platform: "ANY"
     }
@@ -36,7 +36,7 @@ defmodule Hound.Session do
     }
 
     # No retries for this request
-    make_req(:post, "session", params, %{custom_selenium_host: custom_selenium_host})
+    make_req(:post, "session", params, %{custom_selenium_host: options[:custom_selenium_host]})
   end
 
 

@@ -14,12 +14,12 @@ defmodule Hound.SessionHostServer do
   end
 
 
-  def handle_call({:find_or_create_session, pid, gen_server_pid, additional_capabilities, custom_selenium_host}, _from, state) do
+  def handle_call({:find_or_create_session, pid, gen_server_pid, additional_capabilities, options}, _from, state) do
     {:ok, driver_info} = Hound.driver_info
 
     case state[gen_server_pid][:current] do
       nil ->
-        {:ok, session_id} = Hound.Session.create_session(driver_info[:browser], additional_capabilities, custom_selenium_host)
+        {:ok, session_id} = Hound.Session.create_session(additional_capabilities, options)
 
         all_sessions = HashDict.new
           |> HashDict.put :default, session_id
@@ -27,9 +27,9 @@ defmodule Hound.SessionHostServer do
         session_info = HashDict.new
           |> HashDict.put(:current, session_id)
           |> HashDict.put(:all_sessions, all_sessions)
-          |> HashDict.put(:custom_selenium_host, custom_selenium_host)
+          |> HashDict.put(:custom_selenium_host, options[:custom_selenium_host])
 
-        :gen_server.call Hound.ConnectionServer, {:add_session, self, pid, String.to_atom(custom_selenium_host)}
+        :gen_server.call Hound.ConnectionServer, {:add_session, self, pid, String.to_atom(options[:custom_selenium_host])}
 
         state_upgrade = HashDict.new |> HashDict.put(pid, session_info)
         new_state = HashDict.merge(state, state_upgrade)
@@ -56,7 +56,7 @@ defmodule Hound.SessionHostServer do
     end
   end
 
-  def handle_call({:change_session, pid, gen_server_pid, session_name, additional_capabilities, custom_selenium_host}, _from, state) do
+  def handle_call({:change_session, pid, gen_server_pid, session_name, additional_capabilities, options}, _from, state) do
     {:ok, driver_info} = Hound.driver_info
 
     pid_info = state[pid]
@@ -65,13 +65,13 @@ defmodule Hound.SessionHostServer do
     if session_id do
       pid_info_update = HashDict.put(pid_info, :current, session_id)
     else
-      {:ok, session_id} = Hound.Session.create_session(driver_info[:browser], additional_capabilities, custom_selenium_host)
+      {:ok, session_id} = Hound.Session.create_session(driver_info[:browser], additional_capabilities, options)
 
       all_sessions_update = HashDict.put(pid_info[:all_sessions], session_name, session_id)
       pid_info_update = pid_info
         |> HashDict.put(:current, session_id)
         |> HashDict.put(:all_sessions, all_sessions_update)
-        |> HashDict.put(:custom_selenium_host, custom_selenium_host)
+        |> HashDict.put(:custom_selenium_host, options[:custom_selenium_host])
     end
 
     new_state = HashDict.put(state, pid, pid_info_update)

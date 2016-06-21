@@ -24,7 +24,7 @@ defmodule Hound do
   defdelegate start_session,                               to: Hound.Helpers.Session
   defdelegate start_session(additional_capabilities),      to: Hound.Helpers.Session
   defdelegate start_session(additional_capabilities,
-                            custom_selenium_host),         to: Hound.Helpers.Session
+                            options),         to: Hound.Helpers.Session
 
   @doc "Alias of Hound.Helpers.Session.end_session"
   defdelegate end_session,        to: Hound.Helpers.Session

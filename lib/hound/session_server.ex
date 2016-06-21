@@ -17,10 +17,10 @@ defmodule Hound.SessionServer do
   end
 
   # All of these now pass the call down to the correct gen_server per host
-  def session_for_pid(pid, additional_capabilities, custom_selenium_host) do
+  def session_for_pid(pid, additional_capabilities, options) do
     name = String.to_atom(inspect pid)
     gen_server_pid = get_gen_server_pid(name)
-    :gen_server.call name, {:find_or_create_session, pid, gen_server_pid, additional_capabilities, custom_selenium_host}, 30000
+    :gen_server.call name, {:find_or_create_session, pid, gen_server_pid, additional_capabilities, options}, 30000
   end
 
   def current_session_id(pid) do
@@ -35,10 +35,10 @@ defmodule Hound.SessionServer do
     :gen_server.call name, {:custom_selenium_host, pid, gen_server_pid}, 30000
   end
 
-  def change_current_session_for_pid(pid, gen_server_pid, session_name, additional_capabilities, custom_selenium_host) do
+  def change_current_session_for_pid(pid, gen_server_pid, session_name, additional_capabilities, options) do
     name = String.to_atom(inspect pid)
     gen_server_pid = get_gen_server_pid(name)
-    :gen_server.call name, {:change_session, pid, gen_server_pid, session_name, additional_capabilities, custom_selenium_host}, 30000
+    :gen_server.call name, {:change_session, pid, gen_server_pid, session_name, additional_capabilities, options}, 30000
   end
 
   def all_sessions_for_pid(pid) do
