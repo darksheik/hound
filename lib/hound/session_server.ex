@@ -35,6 +35,12 @@ defmodule Hound.SessionServer do
     :gen_server.call name, {:custom_selenium_host, pid, gen_server_pid}, 30000
   end
 
+  def driver_info(pid) do
+    name = String.to_atom(inspect pid)
+    gen_server_pid = get_gen_server_pid(name)
+    :gen_server.call name, {:driver_info, pid, gen_server_pid}, 30000
+  end
+
   def change_current_session_for_pid(pid, gen_server_pid, session_name, additional_capabilities, options) do
     name = String.to_atom(inspect pid)
     gen_server_pid = get_gen_server_pid(name)

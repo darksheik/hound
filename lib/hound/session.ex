@@ -36,7 +36,7 @@ defmodule Hound.Session do
     }
 
     # No retries for this request
-    make_req(:post, "session", params, %{custom_selenium_host: options[:custom_selenium_host]})
+    make_req(:post, "session", params, %{custom_selenium_host: options[:custom_selenium_host], driver_info: options[:driver_info]})
   end
 
 
@@ -48,9 +48,9 @@ defmodule Hound.Session do
 
 
   @doc "Destroy a session"
-  @spec destroy_session(String.t, String.t) :: :ok
-  def destroy_session(session_id, custom_selenium_host) do
-    make_req(:delete, "session/#{session_id}", %{}, %{custom_selenium_host: custom_selenium_host})
+  @spec destroy_session(String.t, String.t, Map.t) :: :ok
+  def destroy_session(session_id, custom_selenium_host, driver_info) do
+    make_req(:delete, "session/#{session_id}", %{}, %{custom_selenium_host: custom_selenium_host, driver_info: driver_info})
   end
 
 

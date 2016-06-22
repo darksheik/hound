@@ -90,7 +90,11 @@ defmodule Hound.RequestUtils do
 
 
   defp get_url(path, options) do
-    {:ok, driver_info} = Hound.driver_info
+    {:ok, driver_info} = if options[:driver_info] do
+      {:ok, options[:driver_info]}
+    else
+      {:ok, Hound.SessionServer.driver_info(self)}
+    end
 
     if options[:custom_selenium_host] do
       driver_info = Map.put(driver_info, :host, options[:custom_selenium_host])
