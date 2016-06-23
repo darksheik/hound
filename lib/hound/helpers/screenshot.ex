@@ -36,8 +36,8 @@ defmodule Hound.Helpers.Screenshot do
     path
   end
 
-  def take_screenshot_for_session_and_host(session_id, host, path \\ nil) do
-    base64_png_data = make_req(:get, "session/#{session_id}/screenshot", %{}, %{custom_selenium_host: host})
+  def take_screenshot_for_session_and_host(session_id, host, driver_info, path \\ nil) do
+    base64_png_data = make_req(:get, "session/#{session_id}/screenshot", %{}, %{custom_selenium_host: host, driver_info: driver_info})
 
     binary_image_data = :base64.decode(base64_png_data)
     {hour, minutes, seconds} = :erlang.time()
