@@ -49,11 +49,17 @@ defmodule Hound.RequestUtils do
         {status, resp} = HTTPoison.delete(url, headers, @http_options)
     end
 
+    {:ok, driver_info} = if options[:driver_info] do
+      {:ok, options[:driver_info]}
+    else
+      {:ok, Hound.SessionServer.driver_info(self)}
+    end
+
     case resp do
       %HTTPoison.Error{id: nil, reason: :timeout} ->
         {:error, :timeout}
       _ ->
-      case response_parser.parse(path, resp.status_code, resp.body) do
+      case response_parser(driver_info).parse(path, resp.status_code, resp.body) do
         :error ->
           raise """
           Webdriver call status code #{resp.status_code} for #{type} request #{url}.
@@ -65,8 +71,7 @@ defmodule Hound.RequestUtils do
   end
 
 
-  defp response_parser do
-    {:ok, driver_info} = Hound.driver_info
+  defp response_parser(driver_info) do
     case driver_info.driver do
       "selenium" ->
         Hound.ResponseParsers.Selenium
