@@ -28,6 +28,14 @@ defmodule Hound.Helpers.Screenshot do
     path
   end
 
+  def take_screenshot_for_session_id(session_id, path \\ default_path) do
+    base64_png_data = make_req(:get, "session/#{session_id}/screenshot")
+    binary_image_data = :base64.decode(base64_png_data)
+
+    :ok = File.write path, binary_image_data
+    path
+  end
+
   defp default_path do
     {{year, month, day}, {hour, minutes, seconds}} = :erlang.localtime()
     cwd = File.cwd!()
