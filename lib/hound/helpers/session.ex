@@ -122,4 +122,9 @@ defmodule Hound.Helpers.Session do
 
 
   end
+
+  @doc false
+  def current_driver_info do
+      Hound.SessionServer.driver_info_for_pid(self)
+  end
 end

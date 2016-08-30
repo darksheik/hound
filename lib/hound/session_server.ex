@@ -17,14 +17,14 @@ defmodule Hound.SessionServer do
 
   def current_session_id(pid) do
     case :ets.lookup(@name, pid) do
-      [{^pid, _ref, session_id, _all_sessions}] -> session_id
+      [{^pid, _ref, session_id, _all_sessions, _}] -> session_id
       [] -> nil
     end
   end
 
   def current_session_name(pid) do
     case :ets.lookup(@name, pid) do
-      [{^pid, _ref, session_id, all_sessions}] ->
+      [{^pid, _ref, session_id, all_sessions, _}] ->
         Enum.find_value all_sessions, fn
           {name, id} when id == session_id -> name
           _ -> nil
@@ -41,11 +41,17 @@ defmodule Hound.SessionServer do
 
   def all_sessions_for_pid(pid) do
     case :ets.lookup(@name, pid) do
-      [{^pid, _ref, _session_id, all_sessions}] -> all_sessions
+      [{^pid, _ref, _session_id, all_sessions, _}] -> all_sessions
       [] -> %{}
     end
   end
 
+  def driver_info_for_pid(pid) do
+    case :ets.lookup(@name, pid) do
+      [{^pid, _ref, session_id, _, driver_info}] -> driver_info[session_id]
+      [] -> nil
+    end
+  end
 
   def destroy_sessions_for_pid(pid) do
     GenServer.call(@name, {:destroy_sessions, pid}, 60000)
@@ -60,14 +66,19 @@ defmodule Hound.SessionServer do
 
 
   def handle_call({:change_session, pid, session_name, opts}, _from, state) do
-    {:ok, driver_info} = Hound.driver_info
+    driver_info = if opts[:driver_info] do
+      opts[:driver_info]
+    else
+      {:ok, driver_info} = Hound.driver_info
+      driver_info
+    end
 
-    {ref, sessions} =
+    {ref, sessions, driver_infos} =
       case :ets.lookup(@name, pid) do
-        [{^pid, ref, _session_id, sessions}] ->
-          {ref, sessions}
+        [{^pid, ref, _session_id, sessions, driver_infos}] ->
+          {ref, sessions, driver_infos}
         [] ->
-          {Process.monitor(pid), %{}}
+          {Process.monitor(pid), %{}, %{}}
       end
 
     {session_id, sessions} =
@@ -79,7 +90,15 @@ defmodule Hound.SessionServer do
           {session_id, Map.put(sessions, session_name, session_id)}
       end
 
-    :ets.insert(@name, {pid, ref, session_id, sessions})
+    {session_id, driver_infos} =
+      case Map.fetch(driver_infos, driver_info) do
+        {:ok, session_id} ->
+          {session_id, driver_infos}
+        :error ->
+          {:ok, session_id} = Hound.Session.create_session(driver_info[:browser], opts)
+          {session_id, Map.put(driver_infos, session_id, driver_info)}
+      end
+    :ets.insert(@name, {pid, ref, session_id, sessions, driver_infos})
     {:reply, session_id, Map.put(state, ref, pid)}
   end
 

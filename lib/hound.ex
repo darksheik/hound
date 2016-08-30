@@ -11,7 +11,12 @@ defmodule Hound do
 
   @doc false
   def driver_info do
-    Hound.ConnectionServer.driver_info
+    cdi = Hound.Helpers.Session.current_driver_info
+    if cdi do
+      {:ok, Hound.Helpers.Session.current_driver_info}
+    else
+      Hound.ConnectionServer.driver_info
+    end
   end
 
   @doc false

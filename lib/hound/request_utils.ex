@@ -29,7 +29,7 @@ defmodule Hound.RequestUtils do
   end
 
   defp send_req(type, path, params, options) do
-    url = get_url(path)
+    url = get_url(path, options[:driver_info])
     has_body = params != %{} && type == :post
     {headers, body} = cond do
        has_body && options[:json_encode] != false ->
@@ -77,8 +77,13 @@ defmodule Hound.RequestUtils do
     end
   end
 
-  defp get_url(path) do
-    {:ok, driver_info} = Hound.driver_info
+  defp get_url(path, driver_info) do
+    driver_info = if driver_info do
+      driver_info
+    else
+      {:ok, driver_info} = Hound.driver_info
+      driver_info
+    end
 
     host = driver_info[:host]
     port = driver_info[:port]
