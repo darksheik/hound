@@ -57,6 +57,9 @@ defmodule Hound.SessionServer do
     GenServer.call(@name, {:destroy_sessions, pid}, 60000)
   end
 
+  def destroy_sessions_for_pid(pid, driver_info) do
+    GenServer.call(@name, {:destroy_sessions, pid, driver_info}, 60000)
+  end
   ## Callbacks
 
   def init(state) do
@@ -107,6 +110,11 @@ defmodule Hound.SessionServer do
     {:reply, :ok, state}
   end
 
+  def handle_call({:destroy_sessions, pid, driver_info}, _from, state) do
+    destroy_sessions(pid, driver_info)
+    {:reply, :ok, state}
+  end
+
   def handle_info({:DOWN, ref, _, _, _}, state) do
     if pid = state[ref] do
       destroy_sessions(pid)
@@ -119,6 +127,14 @@ defmodule Hound.SessionServer do
     :ets.delete(@name, pid)
     Enum.each sessions, fn({_session_name, session_id})->
       Hound.Session.destroy_session(session_id)
+    end
+  end
+
+  defp destroy_sessions(pid, driver_info) do
+    sessions = all_sessions_for_pid(pid)
+    :ets.delete(@name, pid)
+    Enum.each sessions, fn({_session_name, session_id})->
+      Hound.Session.destroy_session(session_id, driver_info)
     end
   end
 end

@@ -59,6 +59,9 @@ defmodule Hound.Session do
     make_req(:delete, "session/#{session_id}")
   end
 
+  def destroy_session(session_id, driver_info) do
+    make_req(:delete, "session/#{session_id}", %{}, %{driver_info: driver_info})
+  end
 
   @doc "Set the timeout for a particular type of operation"
   @spec set_timeout(String.t, String.t, non_neg_integer) :: :ok

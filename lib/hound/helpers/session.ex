@@ -107,6 +107,9 @@ defmodule Hound.Helpers.Session do
     Hound.SessionServer.destroy_sessions_for_pid(pid)
   end
 
+  def end_session(pid, driver_info) do
+    Hound.SessionServer.destroy_sessions_for_pid(pid, driver_info)
+  end
 
   @doc false
   def current_session_id do
