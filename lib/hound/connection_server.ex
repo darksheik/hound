@@ -19,7 +19,6 @@ defmodule Hound.ConnectionServer do
     port = options[:port] || Application.get_env(:hound, :port, default_port)
     path_prefix = options[:path_prefix] || Application.get_env(:hound, :path_prefix, default_path_prefix)
 
-
     driver_info = %{
       :driver => driver,
       :browser => browser,
@@ -28,12 +27,17 @@ defmodule Hound.ConnectionServer do
       :path_prefix => path_prefix
     }
 
+    IO.inspect "I AM IN THE CONNECTION SERVER AND SETTING DRIVER_INFO TO"
+    IO.inspect driver_info
     configs = %{
       :host => options[:app_host] || Application.get_env(:hound, :app_host, "http://localhost"),
       :port => options[:app_port] || Application.get_env(:hound, :app_port, 4001)
     }
 
     state = %{sessions: [], driver_info: driver_info, configs: configs}
+
+    IO.inspect "AND THE STATE WILL BE"
+    IO.inspect state
     Agent.start_link(fn -> state end, name: __MODULE__)
   end
 

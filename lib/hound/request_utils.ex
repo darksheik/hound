@@ -29,6 +29,13 @@ defmodule Hound.RequestUtils do
   end
 
   defp send_req(type, path, params, options) do
+    IO.inspect "IN SEND_REQ"
+    IO.inspect "TYPE"
+    IO.inspect type
+    IO.inspect "PARAMS"
+    IO.inspect params
+    IO.inspect "OPTIONS"
+    IO.inspect options
     url = get_url(path, options[:driver_info])
     has_body = params != %{} && type == :post
     {headers, body} = cond do
@@ -64,6 +71,7 @@ defmodule Hound.RequestUtils do
   end
 
   defp response_parser do
+    IO.inspect "THE RESPONSE PARSER"
     {:ok, driver_info} = Hound.driver_info
     case driver_info.driver do
       "selenium" ->
@@ -78,12 +86,21 @@ defmodule Hound.RequestUtils do
   end
 
   defp get_url(path, driver_info) do
+    IO.inspect "GET_URL called"
+    IO.inspect "PATH of get_url"
+    IO.inspect path
+    IO.inspect "DRIVER INFO PASSED INTO GET_URL"
+    IO.inspect driver_info
+
     driver_info = if driver_info do
       driver_info
     else
       {:ok, driver_info} = Hound.driver_info
       driver_info
     end
+
+    IO.inspect "AFTER IT HAS GONE THROUGH THE RINGER"
+    IO.inspect driver_info
 
     host = driver_info[:host]
     port = driver_info[:port]

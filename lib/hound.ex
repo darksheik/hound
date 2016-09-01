@@ -11,6 +11,7 @@ defmodule Hound do
 
   @doc false
   def driver_info do
+    IO.inspect "HOUND driver_info was called"
     cdi = Hound.Helpers.Session.current_driver_info
     if cdi do
       {:ok, Hound.Helpers.Session.current_driver_info}

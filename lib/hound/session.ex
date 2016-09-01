@@ -21,6 +21,7 @@ defmodule Hound.Session do
   @spec create_session(Hound.Browser.t, map | Keyword.t) :: {:ok, String.t}
   def create_session(browser, opts) do
     capabilities = make_capabilities(browser, opts)
+    IO.inspect "IN create_session after MAKE_CAPABILITIES"
     params = %{
       desiredCapabilities: capabilities
     }
@@ -56,10 +57,12 @@ defmodule Hound.Session do
   @doc "Destroy a session"
   @spec destroy_session(String.t) :: :ok
   def destroy_session(session_id) do
+    IO.inspect "In destroy_session #{session_id}"
     make_req(:delete, "session/#{session_id}")
   end
 
   def destroy_session(session_id, driver_info) do
+    IO.inspect "In destroy_session with 2 params #{session_id}"
     make_req(:delete, "session/#{session_id}", %{}, %{driver_info: driver_info})
   end
 

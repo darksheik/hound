@@ -17,7 +17,6 @@ defmodule Hound.Helpers.Session do
     Hound.SessionServer.change_current_session_for_pid(self, session_name, opts)
   end
 
-
   @doc """
   When running multiple browser sessions, calling this function will switch to the default browser session.
 
