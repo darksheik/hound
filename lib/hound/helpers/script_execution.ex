@@ -31,6 +31,14 @@ defmodule Hound.Helpers.ScriptExecution do
     )
   end
 
+  def execute_script_for_session_and_host(script_function, session_id, host, driver_info, function_args \\ []) do
+    make_req(:post,
+      "session/#{session_id}/execute",
+      %{script: script_function, args: function_args},
+      %{custom_selenium_host: host, driver_info: driver_info}
+    )
+  end
+
   @doc """
   Execute javascript asynchoronously.
 

@@ -50,4 +50,10 @@ defmodule Hound.Helpers.Screenshot do
     :ok = File.write path, binary_image_data
     path
   end
+
+  def take_raw_screenshot_for_session_and_host(session_id, host, driver_info, path \\ nil) do
+    base64_png_data = make_req(:get, "session/#{session_id}/screenshot", %{}, %{custom_selenium_host: host, driver_info: driver_info})
+
+    :base64.decode(base64_png_data)
+  end
 end
