@@ -22,10 +22,12 @@ defmodule Hound.Helpers do
   defmacro hound_session do
     quote do
       setup do
-        Hound.start_session
+        {:ok, driver_info} = Hound.driver_info
+        passed_options = %{custom_selenium_host: "localhost", driver_info: driver_info}
+        session_id = Hound.start_session(%{}, passed_options)
         parent = self
         on_exit fn->
-          Hound.end_session(parent)
+          Hound.Session.destroy_session(session_id, "localhost", driver_info)
         end
         :ok
       end
