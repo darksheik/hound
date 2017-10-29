@@ -27,8 +27,8 @@ defmodule Hound.Mixfile do
 
   defp deps do
     [
-      {:httpoison, "~> 0.8"},
-      {:poison,    "~> 1.4"},
+      {:httpoison, "~> 0.11"},
+      {:poison,    "~> 2.2"},
       {:earmark, "~> 0.1.17 or ~> 0.2", only: :docs},
       {:ex_doc,  "~> 0.10.0", only: :docs}
     ]
